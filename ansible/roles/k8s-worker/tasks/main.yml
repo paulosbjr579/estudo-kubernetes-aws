@@ -1,3 +1,10 @@
 ---
-- name: Join worker nodes to the cluster
-  command: "{{ hostvars['master'].kubeadm_init.stdout_lines[-1] | regex_replace('.*(kubeadm join.*)', '\\1') }}"
+- name: Get the kubeadm join command from master
+  command: "ssh -o StrictHostKeyChecking=no -i /path/to/your/private-key.pem ec2-user@{{ hostvars['master'].ansible_host }} 'cat /etc/kubernetes/kubeadm.conf | grep kubeadm' "
+  register: kubeadm_join_command
+  delegate_to: localhost
+
+- name: Join worker node to the cluster
+  command: "{{ kubeadm_join_command.stdout }}"
+  become: yes
+  ignore_errors: yes

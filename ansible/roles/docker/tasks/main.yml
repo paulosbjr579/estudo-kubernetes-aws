@@ -1,40 +1,61 @@
 ---
-- name: Install Docker on Ubuntu
-  hosts: all
-  become: yes
+- name: Remove conflicting curl-minimal package
+  yum:
+    name: curl-minimal
+    state: absent
+  ignore_errors: yes  # Ignora caso o pacote não esteja presente
 
-  tasks:
-    - name: Update apt repository and install dependencies
-      apt:
-        update_cache: yes
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-        state: present
+- name: Install curl (full version)
+  yum:
+    name: curl
+    state: present
 
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
+- name: Install Docker dependencies
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
 
-    - name: Get Ubuntu codename
-      command: lsb_release -cs
-      register: ubuntu_codename
+- name: Install Docker from Amazon Linux repository
+  yum:
+    name: docker
+    state: present
 
-    - name: Add Docker repository
-      apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable"
-        state: present
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
 
-    - name: Install Docker
-      apt:
-        name: docker-ce
-        state: present
+- name: Enable Docker to start on boot
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
 
-    - name: Enable Docker to start at boot
-      systemd:
-        name: docker
-        enabled: yes
-        state: started
+- name: Add the user to the docker group
+  user:
+    name: "ec2-user"
+    group: docker
+    append: yes
+
+- name: Ensure the docker.sock permissions are correct
+  file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
+    mode: '0660'
+
+- name: Add ec2-user to docker group
+  ansible.builtin.user:
+    name: ec2-user
+    groups: docker
+    append: yes
+  become: true
+
+- name: Restart Docker to apply group changes
+  systemd:
+    name: docker
+    state: restarted
