@@ -1,0 +1,19 @@
+---
+- name: Initialize Kubernetes master
+  command: kubeadm init --pod-network-cidr=10.244.0.0/16
+  register: kubeadm_init
+  ignore_errors: yes
+
+- name: Copy kubeconfig to user home
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    remote_src: yes
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Get the kubeadm join command
+  debug:
+    var: kubeadm_init.stdout_lines
+  when: kubeadm_init.stdout_lines is defined

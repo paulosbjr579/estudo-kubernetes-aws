@@ -1,0 +1,40 @@
+---
+- name: Install Docker on Ubuntu
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update apt repository and install dependencies
+      apt:
+        update_cache: yes
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Get Ubuntu codename
+      command: lsb_release -cs
+      register: ubuntu_codename
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Enable Docker to start at boot
+      systemd:
+        name: docker
+        enabled: yes
+        state: started

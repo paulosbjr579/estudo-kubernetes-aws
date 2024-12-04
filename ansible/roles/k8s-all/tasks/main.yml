@@ -1,0 +1,28 @@
+---
+- name: Add Kubernetes GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: Install Kubernetes components (kubeadm, kubelet, kubectl)
+  apt:
+    name:
+      - kubeadm
+      - kubelet
+      - kubectl
+    state: present
+
+- name: Disable swap (required by kubeadm)
+  command: swapoff -a
+  ignore_errors: yes
+
+- name: Ensure kubelet is enabled and started
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started

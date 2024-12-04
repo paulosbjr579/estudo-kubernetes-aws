@@ -1,0 +1,3 @@
+---
+- name: Join worker nodes to the cluster
+  command: "{{ hostvars['master'].kubeadm_init.stdout_lines[-1] | regex_replace('.*(kubeadm join.*)', '\\1') }}"
