@@ -144,6 +144,21 @@ resource "aws_iam_role" "eks_node_role" {
   }
 }
 
+resource "aws_iam_role_policy" "eks_cluster_policy" {
+  name = "ec2_policy"
+  role = aws_iam_role.eks_cluster_role.name
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : "*",
+        "Resource" : "*"
+      }
+    ]
+  })
+}
 # Criando a Role para o Cluster EKS
 resource "aws_iam_role" "eks_cluster_role" {
   name = "eks-cluster-role"
@@ -179,5 +194,9 @@ resource "aws_iam_role_policy_attachment" "eks_node_role_policy_vpc" {
 
 resource "aws_iam_role_policy_attachment" "eks_node_role_policy_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.eks_node_role.name
+}
+resource "aws_iam_role_policy_attachment" "eks_node_role_policy_cni" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.eks_node_role.name
 }
