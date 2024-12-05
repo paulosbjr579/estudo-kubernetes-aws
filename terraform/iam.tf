@@ -196,6 +196,7 @@ resource "aws_iam_role_policy_attachment" "eks_node_role_policy_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.eks_node_role.name
 }
+
 resource "aws_iam_role_policy_attachment" "eks_node_role_policy_cni" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.eks_node_role.name
@@ -259,6 +260,7 @@ resource "aws_iam_role_policy" "code_build_role_policy" {
             "secretsmanager:CreateSecret",
             "ecs:RegisterTaskDefinition",
             "iam:PassRole",
+            "eks:*",
           ]
         },
       ]
@@ -459,8 +461,4 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       }
     ]
   })
-}
-resource "aws_iam_role_policy_attachment" "eks_node_role_policy_cni" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.eks_node_role.name
 }

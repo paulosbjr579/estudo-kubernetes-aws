@@ -39,6 +39,11 @@ resource "aws_codebuild_project" "codebuild_app_teste_release" {
       name  = "ENVIRONMENT"
       value = "prod"
     }
+
+    environment_variable {
+      name  = "EKS_CLUSTER_NAME"
+      value = aws_eks_cluster.eks_cluster.name
+    }
   }
 
   source {
