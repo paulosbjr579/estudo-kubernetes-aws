@@ -5,6 +5,8 @@ resource "aws_eks_cluster" "eks_cluster" {
   role_arn = aws_iam_role.eks_cluster_role.arn
   vpc_config {
     subnet_ids = module.vpc_estudo_kubernetes.private_subnet_ids
+    security_group_ids = [aws_security_group.eks_node_sg.id] # Adiciona o SG aqui
+    endpoint_public_access = true
   }
 }
 
@@ -15,6 +17,11 @@ resource "aws_eks_node_group" "eks_node_group" {
   node_role_arn   = aws_iam_role.eks_node_role.arn
 
   subnet_ids = module.vpc_estudo_kubernetes.private_subnet_ids
+
+  remote_access {
+    ec2_ssh_key = "k8s-key" # Opcional: Para acessar via SSH
+    source_security_group_ids = [aws_security_group.eks_node_sg.id]
+  }
 
   scaling_config {
     desired_size = 2

@@ -57,7 +57,6 @@ resource "aws_internet_gateway" "igw" {
 
 ##### NAT GATEWAY #####
 resource "aws_eip" "nat_eip" {
-  vpc        = true
   depends_on = [aws_internet_gateway.igw]
   tags       = {
     Name        = "${var.env}-${var.name}-nat-eip"
